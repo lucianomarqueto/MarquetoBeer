@@ -14,9 +14,16 @@
 
 
 <ion-content padding>
-  <ul>
-    <li *ngFor="let item of items | async">
-      {{ item.Nome }}
-    </li>
-  </ul>
+
+  <ion-fab top right edge>
+    <button ion-fab mini>
+      <ion-icon name="add" (click)="showAdd()"></ion-icon>
+    </button>    
+  </ion-fab>
+
+  <ion-list>
+      <button ion-item *ngFor="let item of items | async" (click)="itemSelected(item)">
+          {{ item.Nome }}
+      </button>  
+    </ion-list>  
 </ion-content>

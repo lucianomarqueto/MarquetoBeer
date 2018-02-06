@@ -16,7 +16,7 @@ export class LoginPage {
     this.afAuth.authState.subscribe(res => {
       if (res && res.uid) {
         //Usuario esta logado
-        this.navCtrl.push(HomePage);
+        this.navCtrl.setRoot(HomePage);        
       } else {
         //Usuário não esta logado
         //this.navCtrl.push(LoginPage);

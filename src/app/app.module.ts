@@ -7,6 +7,7 @@ import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { LoginPage } from '../pages/login/login';
 import { ReceitasPage } from '../pages/receitas/receitas';
+import { RampaPage } from '../pages/rampa/rampa';
 
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -24,14 +25,15 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
     HomePage,
     ListPage,
     LoginPage,
-    ReceitasPage
+    ReceitasPage,
+    RampaPage
   ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
-    AngularFirestoreModule
+    AngularFirestoreModule.enablePersistence()
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -39,7 +41,8 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
     HomePage,
     ListPage,
     LoginPage,
-    ReceitasPage
+    ReceitasPage,
+    RampaPage
   ],
   providers: [
     StatusBar,
