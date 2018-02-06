@@ -13,6 +13,13 @@
 </ion-header>
 
 
-<ion-content padding>
-
+<ion-content padding>  
+  <div *ngIf="afAuth.authState | async; let user; else showLogin">
+    <h1>Olá {{ user.displayName }}!</h1>
+    <button (click)="logout()">Logout</button>
+  </div>
+  <ng-template #showLogin>
+    <p>Clique para login com o Google.</p>
+    <button (click)="login()"><ion-icon name="logo-google"></ion-icon></button>
+  </ng-template>
 </ion-content>
