@@ -21,8 +21,31 @@
     </button>
   </ion-fab>
   <ion-list>
-    <button ion-item *ngFor="let rampa of rampas | async" (click)="itemSelected(rampa)">
-      {{ rampa.Sequencia }} - {{ rampa.Temperatura }} - {{ rampa.Tempo }}
-    </button>
+    <ion-grid>
+      <ion-row>
+        <ion-col col-3></ion-col>
+        <ion-col col-3>
+          <ion-icon name="thermometer"></ion-icon>
+        </ion-col>
+        <ion-col col-3>
+          <ion-icon name="time"></ion-icon>
+        </ion-col>
+        <ion-col col-3></ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-list>
+  <ion-list ion-item *ngFor="let rampa of rampas | async">
+    <ion-grid>
+      <ion-row>
+        <ion-col col-3>{{ rampa.Sequencia }}</ion-col>
+        <ion-col col-3>{{ rampa.Temperatura }}°C</ion-col>
+        <ion-col col-3>{{ rampa.Tempo }} min</ion-col>
+        <ion-col col-3>
+          <button (click)="deleteItem(rampa)">
+            <ion-icon name="trash"></ion-icon>
+          </button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </ion-list>
 </ion-content>

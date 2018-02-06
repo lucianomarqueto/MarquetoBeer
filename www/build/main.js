@@ -160,11 +160,11 @@ var RampaPage = (function () {
                 },
                 {
                     name: 'Temperatura',
-                    placeholder: 'Temperatura'
+                    placeholder: 'Temperatura em °C'
                 },
                 {
                     name: 'Tempo',
-                    placeholder: 'Tempo'
+                    placeholder: 'Tempo em minutos'
                 }
             ],
             buttons: [
@@ -188,13 +188,17 @@ var RampaPage = (function () {
     RampaPage.prototype.add = function (data) {
         this.itemsCollection.add(data);
     };
+    RampaPage.prototype.deleteItem = function (data) {
+        this.itemsCollection.doc(data.id).delete();
+    };
     RampaPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-rampa',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini>\n      <ion-icon name="add" tappable (click)="showAdd()"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <button ion-item *ngFor="let rampa of rampas | async" (click)="itemSelected(rampa)">\n      {{ rampa.Sequencia }} - {{ rampa.Temperatura }} - {{ rampa.Tempo }}\n    </button>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
+            selector: 'page-rampa',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini>\n      <ion-icon name="add" tappable (click)="showAdd()"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <ion-grid>\n      <ion-row>\n        <ion-col col-3></ion-col>\n        <ion-col col-3>\n          <ion-icon name="thermometer"></ion-icon>\n        </ion-col>\n        <ion-col col-3>\n          <ion-icon name="time"></ion-icon>\n        </ion-col>\n        <ion-col col-3></ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n  <ion-list ion-item *ngFor="let rampa of rampas | async">\n    <ion-grid>\n      <ion-row>\n        <ion-col col-3>{{ rampa.Sequencia }}</ion-col>\n        <ion-col col-3>{{ rampa.Temperatura }}°C</ion-col>\n        <ion-col col-3>{{ rampa.Tempo }} min</ion-col>\n        <ion-col col-3>\n          <button (click)="deleteItem(rampa)">\n            <ion-icon name="trash"></ion-icon>\n          </button>\n        </ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */], __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]) === "function" && _d || Object])
     ], RampaPage);
     return RampaPage;
+    var _a, _b, _c, _d;
 }());
 
 //# sourceMappingURL=rampa.js.map

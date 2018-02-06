@@ -46,11 +46,11 @@ export class RampaPage {
         },
         {
           name: 'Temperatura',
-          placeholder: 'Temperatura'
+          placeholder: 'Temperatura em °C'
         },
         {
           name: 'Tempo',
-          placeholder: 'Tempo'
+          placeholder: 'Tempo em minutos'
         }
       ],
       buttons: [
@@ -74,5 +74,8 @@ export class RampaPage {
 
   add(data){
     this.itemsCollection.add(data);
+  }
+  deleteItem(data){
+    this.itemsCollection.doc(data.id).delete();
   }
 }
