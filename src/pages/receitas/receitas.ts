@@ -6,7 +6,8 @@ import { AlertController } from 'ionic-angular';
 import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
 
-export interface Item { Nome: string; }
+export interface Receita { Nome: string; }
+export interface ReceitaId extends Receita { id: string; }
 
 @IonicPage()
 @Component({
@@ -15,12 +16,18 @@ export interface Item { Nome: string; }
 })
 export class ReceitasPage {
 
-  private itemsCollection: AngularFirestoreCollection<Item>;
-  items: Observable<Item[]>;
+  private itemsCollection: AngularFirestoreCollection<Receita>;
+  receitas: Observable<ReceitaId[]>;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, private afs: AngularFirestore, public alertCtrl: AlertController) {
-    this.itemsCollection = afs.collection<Item>('Receitas');
-    this.items = this.itemsCollection.valueChanges();
+    this.itemsCollection = afs.collection<Receita>('Receitas');
+    this.receitas = this.itemsCollection.snapshotChanges().map(actions => {
+      return actions.map(a => {
+        const data = a.payload.doc.data() as Receita;
+        const id = a.payload.doc.id;
+        return { id, ...data };
+      });
+    });
   }
 
   ionViewDidLoad() {
@@ -28,6 +35,7 @@ export class ReceitasPage {
   }
 
   showAdd() {
+    console.log("Click to add");
     let prompt = this.alertCtrl.create({
       title: 'Nova Receita',
       message: "Qual é o nome da nova receita?",

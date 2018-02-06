@@ -7,12 +7,22 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>rampa</ion-title>
+    <ion-title>Configuração das Rampas</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
-<ion-content padding>
 
+<ion-content padding>
+  <ion-fab top right edge>
+    <button ion-fab mini>
+      <ion-icon name="add" tappable (click)="showAdd()"></ion-icon>
+    </button>
+  </ion-fab>
+  <ion-list>
+    <button ion-item *ngFor="let rampa of rampas | async" (click)="itemSelected(rampa)">
+      {{ rampa.Sequencia }} - {{ rampa.Temperatura }} - {{ rampa.Tempo }}
+    </button>
+  </ion-list>
 </ion-content>
