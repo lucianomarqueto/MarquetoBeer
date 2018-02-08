@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "108728226334",
+    "firebase_url": "https://marquetobeer.firebaseio.com",
+    "project_id": "marquetobeer",
+    "storage_bucket": "marquetobeer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:108728226334:android:4d104621279613a1",
+        "android_client_info": {
+          "package_name": "br.com.marquetobeer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "108728226334-k5nj8jc7o67ulkqdc5khhot1ul19jnv2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.marquetobeer",
+            "certificate_hash": "a996d05bd600044be074ef4b463c1240393f588f"
+          }
+        },
+        {
+          "client_id": "108728226334-d6ff9drlb74f610u9ktiipi685i03jrg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIrOuNTqZC3k5--Q85dxcnNPRQxG5BcX0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "108728226334-d6ff9drlb74f610u9ktiipi685i03jrg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

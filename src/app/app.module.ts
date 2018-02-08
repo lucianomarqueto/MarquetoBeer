@@ -18,6 +18,9 @@ import { environment } from '../environments/environment';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 
+import { GooglePlus } from '@ionic-native/google-plus';
+
+
 
 @NgModule({
   declarations: [
@@ -47,7 +50,8 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
   providers: [
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    GooglePlus
   ]
 })
 export class AppModule {}
