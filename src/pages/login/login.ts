@@ -1,6 +1,7 @@
-import { HomePage } from './../home/home';
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, Platform } from 'ionic-angular';
+
+import { HomePage } from './../home/home';
 
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
@@ -20,7 +21,7 @@ export class LoginPage {
         //Usuario esta logado        
         this.navCtrl.setRoot(HomePage);
       } else {
-        alert('Logged out');
+        console.log('Usuário não esta logado');
         //Usuário não esta logado
         //this.navCtrl.push(LoginPage);
       }
@@ -48,7 +49,7 @@ export class LoginPage {
             });
         }
       }).catch((msg) => {
-        alert(msg + "Gplus signin failed2")
+        alert(msg + "Gplus signin failed 2")
       });
 
 

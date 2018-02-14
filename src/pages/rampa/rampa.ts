@@ -4,9 +4,7 @@ import { AlertController } from 'ionic-angular';
 
 import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
-
-export interface Rampa { Sequencia: number; Temperatura: number; Tempo: number;}
-export interface RampaId extends Rampa { id: string; }
+import {Rampa, RampaId} from './../../models/rampas'
 
 @IonicPage()
 @Component({
@@ -41,16 +39,23 @@ export class RampaPage {
       message: "Adicione uma nova etapa na rampa:",
       inputs: [
         {
+          name: 'Nome',
+          placeholder: 'Nome',          
+        },
+        {
           name: 'Sequencia',
-          placeholder: 'Sequencia'
+          placeholder: 'Sequencia',
+          type: 'Number',
         },
         {
           name: 'Temperatura',
-          placeholder: 'Temperatura em °C'
+          placeholder: 'Temperatura em °C',
+          type: 'Number',
         },
         {
           name: 'Tempo',
-          placeholder: 'Tempo em minutos'
+          placeholder: 'Tempo em minutos',
+          type: 'Number',
         }
       ],
       buttons: [
@@ -63,7 +68,7 @@ export class RampaPage {
         {
           text: 'Save',
           handler: data => {
-            console.log('Saved clicked');
+            console.log('Saved clicked');            
             this.add(data);
           }
         }
@@ -72,8 +77,15 @@ export class RampaPage {
     prompt.present();
   }
 
-  add(data){
-    this.itemsCollection.add(data);
+  add(data){   
+    console.log(data);
+    let out = {
+      Nome: data.Nome,
+      Sequencia: Number(data.Sequencia),
+      Temperatura: Number(data.Temperatura),
+      Tempo: Number(data.Tempo),
+    }
+    this.itemsCollection.add(out);
   }
   deleteItem(data){
     this.itemsCollection.doc(data.id).delete();

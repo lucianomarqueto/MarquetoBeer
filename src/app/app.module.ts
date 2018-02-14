@@ -8,6 +8,7 @@ import { ListPage } from '../pages/list/list';
 import { LoginPage } from '../pages/login/login';
 import { ReceitasPage } from '../pages/receitas/receitas';
 import { RampaPage } from '../pages/rampa/rampa';
+import { ProduzirPage } from '../pages/produzir/produzir';
 
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -29,7 +30,8 @@ import { GooglePlus } from '@ionic-native/google-plus';
     ListPage,
     LoginPage,
     ReceitasPage,
-    RampaPage
+    RampaPage,
+    ProduzirPage
   ],
   imports: [
     BrowserModule,
@@ -45,7 +47,8 @@ import { GooglePlus } from '@ionic-native/google-plus';
     ListPage,
     LoginPage,
     ReceitasPage,
-    RampaPage
+    RampaPage,
+    ProduzirPage
   ],
   providers: [
     StatusBar,

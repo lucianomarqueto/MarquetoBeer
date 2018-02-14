@@ -16,14 +16,21 @@
 <ion-content padding>
 
   <ion-fab top right edge>
-    <button ion-fab mini  tappable (click)="showAdd()">      
-        <ion-icon name="add"></ion-icon>      
+    <button ion-fab mini tappable (click)="showAdd()">
+      <ion-icon name="add"></ion-icon>
     </button>
   </ion-fab>
 
   <ion-list>
-    <button ion-item *ngFor="let receita of receitas | async" (click)="itemSelected(receita)">
-      {{ receita.Nome }}
-    </button>
+    <ion-item *ngFor="let receita of receitas | async">
+      <p>{{ receita.Nome }}
+        <button tappable (click)="editReceita(receita)">
+          <ion-icon name="create"></ion-icon>
+        </button>
+        <button tappable (click)="produzirReceita(receita)">
+          <ion-icon name="beer"></ion-icon>
+        </button>
+      </p>
+    </ion-item>
   </ion-list>
 </ion-content>
