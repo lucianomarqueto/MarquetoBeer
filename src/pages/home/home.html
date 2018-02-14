@@ -9,5 +9,16 @@
 
 <ion-content padding>
   <h3>Olá {{ username }}</h3>
-  <button ion-button secondary menuToggle>Toggle Menu</button>
+
+  <ion-list ion-item *ngFor="let producao of producoes | async">
+    <ion-card tappable (click)="selectItem(producao)">
+      <ion-card-header>
+        {{ producao.Receita }}
+      </ion-card-header>
+      <ion-card-content>
+        {{ producao.Status }}
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+  
 </ion-content>

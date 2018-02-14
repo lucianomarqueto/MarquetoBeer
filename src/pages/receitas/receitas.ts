@@ -4,9 +4,9 @@ import { RampaPage } from './../rampa/rampa';
 import { ProduzirPage } from './../produzir/produzir';
 import { AlertController, LoadingController } from 'ionic-angular';
 
-import { Receita, ReceitaId } from './../../models/receitas'
-import { Rampa, RampaId } from './../../models/rampas'
-import { Producao, ProducaoId } from './../../models/producoes'
+import { Receita, ReceitaId } from './../../models/receitas';
+import { Rampa, RampaId } from './../../models/rampas';
+import { Producao, ProducaoId } from './../../models/producoes';
 
 import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
