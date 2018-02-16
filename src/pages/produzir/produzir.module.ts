@@ -7,7 +7,7 @@ import { ProduzirPage } from './produzir';
     ProduzirPage,
   ],
   imports: [
-    IonicPageModule.forChild(ProduzirPage),
+    IonicPageModule.forChild(ProduzirPage)
   ],
 })
 export class ProduzirPageModule {}

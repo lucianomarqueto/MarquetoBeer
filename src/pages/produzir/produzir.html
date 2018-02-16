@@ -7,12 +7,32 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Produzir</ion-title>
+    <ion-title>Produção</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+  <ion-grid>
+    <ion-row>
+      <ion-col col-6>
+        <button ion-button>Iniciar</button>
+      </ion-col>    
+      <ion-col col-6>
+        <ion-card>
 
+          <ion-card-header>
+            Estimativa: {{ TempoTotal }} Minutos
+          </ion-card-header>
+          <ion-card-content>
+             Final da etapa quente as  {{ HoraFinal | date:'dd/MM/yyyy HH:mm'}}
+          </ion-card-content>
+
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div id="container" style="display: block;"></div>
 </ion-content>
