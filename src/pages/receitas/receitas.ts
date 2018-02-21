@@ -121,7 +121,8 @@ export class ReceitasPage {
     this.novaProducao = {
       Receita: item.Nome,
       Criado: new Date(),
-      Status: "Em Preparação"
+      Status: "Em Preparação",
+      Inicio: null
     };
 
     this.producaoCollection = this.afs.collection('Producoes');

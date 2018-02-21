@@ -321,7 +321,8 @@ var ReceitasPage = (function () {
         this.novaProducao = {
             Receita: item.Nome,
             Criado: new Date(),
-            Status: "Em Preparação"
+            Status: "Em Preparação",
+            Inicio: null
         };
         this.producaoCollection = this.afs.collection('Producoes');
         this.producaoCollection.add(this.novaProducao).then(function (ref) {
@@ -383,7 +384,7 @@ webpackEmptyAsyncContext.id = 169;
 
 var map = {
 	"../pages/login/login.module": [
-		441,
+		440,
 		3
 	],
 	"../pages/produzir/produzir.module": [
@@ -391,7 +392,7 @@ var map = {
 		2
 	],
 	"../pages/rampa/rampa.module": [
-		440,
+		441,
 		1
 	],
 	"../pages/receitas/receitas.module": [
@@ -493,8 +494,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["d" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* MyApp */], {}, {
                     links: [
                         { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] },
                         { loadChildren: '../pages/login/login.module#LoginPageModule', name: 'LoginPage', segment: 'login', priority: 'low', defaultHistory: [] },
+                        { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] },
                         { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] }
                     ]
                 }),
@@ -723,9 +724,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 var ProduzirPage = (function () {
     function ProduzirPage(navCtrl, navParams, afs) {
+        var _this = this;
         this.navCtrl = navCtrl;
         this.navParams = navParams;
         this.afs = afs;
+        //Variavel para exibir ou esconder botão de iniciar
+        this.buttonIniciar = false;
+        //Series do grafico
         this.data = [];
         console.log('parans:' + this.navParams.data);
         this.rampaCollection = afs.collection('Producoes/' + this.navParams.data + "/RampasPlanejado/", function (ref) { return ref.orderBy('Sequencia'); });
@@ -737,6 +742,12 @@ var ProduzirPage = (function () {
                 return __assign({ id: id }, data);
             });
         });
+        this.producaoDoc = afs.doc('Producoes/' + this.navParams.data);
+        this.producao = this.producaoDoc.valueChanges();
+        this.producao.subscribe(function (i) {
+            _this.producaoObj = i;
+            _this.updateChart();
+        }, function (erro) { console.log(erro); });
         /*
         EXECUCAO
         this.rampaCollection = afs.collection<Rampa>('Producoes/' + this.navParams.data + "/RampasPlanejado/", ref => ref.orderBy('Sequencia'));
@@ -782,32 +793,8 @@ var ProduzirPage = (function () {
         });
         //Obtem a rampa planejada
         this.rampas.subscribe(function (i) {
-            var inicio = new Date();
-            var velocidadeSubida = 1; //graus por minuto;
-            var auxData = inicio;
-            var auxTemperatura = 0;
-            var auxMinutos = 0;
-            var data = [];
-            _this.TempoTotal = 0;
-            //Adicionando ponto 0
-            data.push([inicio.valueOf(), 0]);
-            i.forEach(function (r) {
-                //Rampa de alteração de temperatura         
-                auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
-                //Trata tempo negativo em caso de descida
-                auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
-                _this.TempoTotal = _this.TempoTotal + auxMinutos;
-                auxData.setMinutes(auxData.getMinutes() + auxMinutos);
-                data.push([auxData.valueOf(), r.Temperatura]);
-                //Tempo na temperatura da rampa
-                auxData.setMinutes(auxData.getMinutes() + r.Tempo);
-                data.push([auxData.valueOf(), r.Temperatura]);
-                _this.TempoTotal = _this.TempoTotal + r.Tempo;
-                auxTemperatura = r.Temperatura;
-            });
-            _this.HoraFinal = inicio;
-            _this.HoraFinal.setMinutes(inicio.getMinutes() + _this.TempoTotal);
-            _this.chart.series[0].setData(data);
+            _this.rampasArray = i;
+            _this.updateChart();
         }, function (erro) { console.log(erro); });
         /*
         EXECUTADO
@@ -821,14 +808,61 @@ var ProduzirPage = (function () {
           erro => { console.log(erro) }
         );*/
     };
+    //Iniciar processo de brassagem
+    ProduzirPage.prototype.iniciar = function () {
+        this.producaoDoc.update({ Status: "Em Brassagem", Inicio: new Date() });
+    };
+    ProduzirPage.prototype.updateChart = function () {
+        var _this = this;
+        console.log("UpdateChat");
+        console.log("Rampa Array " + this.rampasArray);
+        if (this.rampasArray == null) {
+            console.log("Rampa Array null");
+            return;
+        }
+        console.log("Producao obj " + this.producaoObj);
+        if (this.producaoObj.Inicio != null) {
+            console.log("Producao inicio  " + this.producaoObj.Inicio);
+            console.log("Producao data  " + new Date());
+            var inicio = this.producaoObj.Inicio;
+        }
+        else {
+            console.log("Producao inicio  null");
+            var inicio = new Date();
+        }
+        var velocidadeSubida = 1; //graus por minuto;
+        var auxData = inicio;
+        var auxTemperatura = 0;
+        var auxMinutos = 0;
+        var data = [];
+        this.TempoTotal = 0;
+        //Adicionando ponto 0
+        data.push([inicio.valueOf(), 0]);
+        this.rampasArray.forEach(function (r) {
+            //Rampa de alteração de temperatura         
+            auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
+            //Trata tempo negativo em caso de descida
+            auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
+            _this.TempoTotal = _this.TempoTotal + auxMinutos;
+            auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+            data.push([auxData.valueOf(), r.Temperatura]);
+            //Tempo na temperatura da rampa
+            auxData.setMinutes(auxData.getMinutes() + r.Tempo);
+            data.push([auxData.valueOf(), r.Temperatura]);
+            _this.TempoTotal = _this.TempoTotal + r.Tempo;
+            auxTemperatura = r.Temperatura;
+        });
+        this.HoraFinal = inicio;
+        this.HoraFinal.setMinutes(inicio.getMinutes() + this.TempoTotal);
+        this.chart.series[0].setData(data);
+    };
     ProduzirPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-6>\n        <button ion-button>Iniciar</button>\n      </ion-col>    \n      <ion-col col-6>\n        <ion-card>\n\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n             Final da etapa quente as  {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
+            selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            {{ (producao | async)?.Status }}\n          </ion-card-header>\n          <ion-card-content>\n            <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>\n          </ion-card-content>\n\n        </ion-card>\n\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n            Final da etapa quente as {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */]) === "function" && _c || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */]])
     ], ProduzirPage);
     return ProduzirPage;
-    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=produzir.js.map
