@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { DatePipe } from '@angular/common';
+
 import * as HighCharts from 'highcharts';
 
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
 import { Rampa, RampaId } from './../../models/rampas'
 import { Producao, ProducaoId } from './../../models/producoes'
+import { RegistroPanel, RegistroPanelId } from './../../models/registro-panel'
 
 import { Console } from '@angular/core/src/console';
 import { updateDate } from 'ionic-angular/util/datetime-util';
 
-
+import { ControlPanelProvider } from '../../providers/control-panel/control-panel';
 
 @IonicPage()
 @Component({
@@ -20,10 +22,16 @@ import { updateDate } from 'ionic-angular/util/datetime-util';
 })
 export class ProduzirPage {
 
+  producaoId: String;
+
   private rampaCollection: AngularFirestoreCollection<Rampa>;
   rampas: Observable<RampaId[]>;
   //Ultima atualização das rampas
   rampasArray: RampaId[];
+
+  private registroPanelCollection: AngularFirestoreCollection<RegistroPanel>;
+  registroPanel: Observable<RegistroPanelId[]>;
+  //Ultima atualização das rampas
 
   private producaoDoc: AngularFirestoreDocument<Producao>;
   producao: Observable<Producao>;
@@ -32,8 +40,6 @@ export class ProduzirPage {
 
   //Variavel para exibir ou esconder botão de iniciar
   public buttonIniciar: boolean = false;
-
-
 
   //Series do grafico
   data = [];
@@ -45,8 +51,12 @@ export class ProduzirPage {
   //Date final da produção
   HoraFinal: any;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, private afs: AngularFirestore) {
-    console.log('parans:' + this.navParams.data);
+  constructor(public navCtrl: NavController,
+    public navParams: NavParams,
+    private afs: AngularFirestore,
+    public controlPanelProvider: ControlPanelProvider) {
+
+    this.producaoId = this.navParams.data;
     this.rampaCollection = afs.collection<Rampa>('Producoes/' + this.navParams.data + "/RampasPlanejado/", ref => ref.orderBy('Sequencia'));
     this.rampas = this.rampaCollection.snapshotChanges()
       .map(actions => {
@@ -57,31 +67,37 @@ export class ProduzirPage {
         });
       });
 
+    this.registroPanelCollection = afs.collection<RegistroPanel>('Producoes/' + this.navParams.data + "/RampasExecutada/", ref => ref.orderBy('Data'));
+    this.registroPanel = this.registroPanelCollection.stateChanges(['added'])
+      .map(actions => {
+        return actions.map(a => {
+          const data = a.payload.doc.data() as RegistroPanel;
+          const id = a.payload.doc.id;
+          return { id, ...data };
+        });
+      });
+
     this.producaoDoc = afs.doc<Producao>('Producoes/' + this.navParams.data);
     this.producao = this.producaoDoc.valueChanges();
     this.producao.subscribe(
       i => {
+        console.log("Obtem objeto ");
+        console.log(i);
         this.producaoObj = i;
         this.updateChart();
       },
       erro => { console.log(erro) }
     );
-    /*
-    EXECUCAO
-    this.rampaCollection = afs.collection<Rampa>('Producoes/' + this.navParams.data + "/RampasPlanejado/", ref => ref.orderBy('Sequencia'));
-    this.rampas = this.rampaCollection.stateChanges(['added'])
-    .map(actions => {
-      return actions.map(a => {
-        const data = a.payload.doc.data() as Rampa;
-        const id = a.payload.doc.id;
-        return { id, ...data };
-      });
-    });*/
+
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ProduzirPage');
-
+  ionViewDidLoad() {   
+    HighCharts.setOptions({
+      global: {
+        timezoneOffset: 3 * 60
+      }
+    });
+    //Configuração do grafico
     this.chart = HighCharts.chart('container', {
       chart: {
         type: 'line',
@@ -120,59 +136,65 @@ export class ProduzirPage {
       erro => { console.log(erro) }
     );
 
-    /*
-    EXECUTADO
-    this.rampas.subscribe(
+
+    //Obtem rampa executada
+    this.registroPanel.subscribe(
       i => {
         i.forEach(r => {
-          this.chart.series[0].addPoint(r.Temperatura);
-          console.log(r);
+          this.chart.series[1].addPoint([r.Data.valueOf(), r.Temperatura]);
         });
       },
       erro => { console.log(erro) }
-    );*/
+    );
   }
 
   //Iniciar processo de brassagem
-  iniciar() {
+  iniciar() {        
     this.producaoDoc.update({ Status: "Em Brassagem", Inicio: new Date() });
+    this.conectarPainelControle();
   }
 
+  //Atualiza Grafico
   updateChart() {
-    console.log("UpdateChat");
-    console.log("Rampa Array "+this.rampasArray);
-    if(this.rampasArray == null){
-      console.log("Rampa Array null");
+    if (this.rampasArray == null) {
+      //Metodo asyn não carregou ainda
       return;
     }
-    console.log("Producao obj "+this.producaoObj);
-    if(this.producaoObj.Inicio != null){
-      console.log("Producao inicio  "+this.producaoObj.Inicio);
-      console.log("Producao data  "+new Date());
-      var inicio = this.producaoObj.Inicio
-    }else{
-      console.log("Producao inicio  null");
-      var inicio = new Date();
-    }
-    
 
+    //Se não iniciar ainda utilizar a data agora
+    if (this.producaoObj == null) {
+      //Metodo asyn não carregou ainda
+      return;      
+    } 
+    
+    if (this.producaoObj.Inicio == null){
+      //Só renderiza o grafico após o inicio
+      return; 
+    }
+    console.log(this.producaoObj);
+
+    var inicio =  new Date(this.producaoObj.Inicio);
+    console.log(inicio);
     var velocidadeSubida = 1; //graus por minuto;
-    var auxData = inicio;
+    var auxData = new Date(inicio);
     var auxTemperatura = 0;
     var auxMinutos = 0;
     var data = [];
     this.TempoTotal = 0;
-
-    //Adicionando ponto 0
+    console.log(auxData);
+    //Adicionar ponto 0    
     data.push([inicio.valueOf(), 0]);
     this.rampasArray.forEach(r => {
-      //Rampa de alteração de temperatura         
-      auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
-      //Trata tempo negativo em caso de descida
-      auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
-
-      this.TempoTotal = this.TempoTotal + auxMinutos
-      auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+      if (r.Inicio == null) {
+        //Rampa de alteração de temperatura         
+        auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
+        //Trata tempo negativo em caso de descida
+        auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
+        this.TempoTotal = this.TempoTotal + auxMinutos     
+        auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+      } else {               
+       auxData = r.Inicio;
+      }     
       data.push([auxData.valueOf(), r.Temperatura]);
 
       //Tempo na temperatura da rampa
@@ -184,6 +206,11 @@ export class ProduzirPage {
     });
     this.HoraFinal = inicio;
     this.HoraFinal.setMinutes(inicio.getMinutes() + this.TempoTotal);
-    this.chart.series[0].setData(data);
+    this.chart.series[0].setData(data);       
   }
+
+  conectarPainelControle() {
+    this.controlPanelProvider.conectar(this.navParams.data);
+  }
+
 }

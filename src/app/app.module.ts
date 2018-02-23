@@ -21,6 +21,7 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
 
 import { GooglePlus } from '@ionic-native/google-plus';
 
+import { ControlPanelProvider } from '../providers/control-panel/control-panel';
 
 
 @NgModule({
@@ -54,7 +55,8 @@ import { GooglePlus } from '@ionic-native/google-plus';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    GooglePlus
+    GooglePlus,
+    ControlPanelProvider
   ]
 })
 export class AppModule {}

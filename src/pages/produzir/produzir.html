@@ -33,14 +33,31 @@
     <ion-row>
       <ion-col col-12>
         <ion-card>
-
           <ion-card-header>
             Estimativa: {{ TempoTotal }} Minutos
           </ion-card-header>
           <ion-card-content>
             Final da etapa quente as {{ HoraFinal | date:'dd/MM/yyyy HH:mm'}}
           </ion-card-content>
-
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-12>
+        <ion-card>
+          <ion-card-header>
+            Panel de controle
+          </ion-card-header>
+          <ion-card-content>
+            <p *ngIf="(controlPanelProvider.producaoId!=producaoId)">O sistema não esta salvando os dados do Painel nessa produção</p>
+            <button *ngIf="(controlPanelProvider.producaoId!=producaoId)" ion-button (click)="conectarPainelControle()">Reconectar a essa produção</button>
+            <p>Ultima atulização: {{ controlPanelProvider.ultimaAtualizacao | date:'HH:mm:ss'}}</p>
+            <p>Ultima temperatura: {{ controlPanelProvider.ultimaTemperatura | number}} °C</p>
+            <p>Arquecedor:
+              <ion-icon name="flame" *ngIf="(controlPanelProvider.aquecedorLigado)"> Ligado</ion-icon>
+              <ion-icon name="snow" *ngIf="(!controlPanelProvider.aquecedorLigado)"> Desligado</ion-icon>
+            </p>
+          </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>

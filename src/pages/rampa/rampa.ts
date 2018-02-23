@@ -84,6 +84,7 @@ export class RampaPage {
       Sequencia: Number(data.Sequencia),
       Temperatura: Number(data.Temperatura),
       Tempo: Number(data.Tempo),
+      Inicio: null
     }
     this.itemsCollection.add(out);
   }

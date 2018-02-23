@@ -10,7 +10,7 @@ webpackJsonp([4],{
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__login_login__ = __webpack_require__(86);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__produzir_produzir__ = __webpack_require__(87);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_angularfire2_auth__ = __webpack_require__(81);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_firestore__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_angularfire2_firestore__ = __webpack_require__(47);
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -78,14 +78,13 @@ var HomePage = (function () {
 
 /***/ }),
 
-/***/ 157:
+/***/ 134:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return RampaPage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ControlPanelProvider; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angularfire2_firestore__ = __webpack_require__(47);
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -105,95 +104,107 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-
-
-var RampaPage = (function () {
-    function RampaPage(navCtrl, navParams, afs, alertCtrl) {
-        this.navCtrl = navCtrl;
-        this.navParams = navParams;
+var ControlPanelProvider = (function () {
+    function ControlPanelProvider(afs) {
         this.afs = afs;
-        this.alertCtrl = alertCtrl;
-        console.log(this.navParams);
-        this.itemsCollection = afs.collection('Receitas/' + this.navParams.data.id + "/Rampas/", function (ref) { return ref.orderBy('Sequencia'); });
-        this.rampas = this.itemsCollection.snapshotChanges().map(function (actions) {
+        this.ultimaAtualizacao = new Date();
+        this.ultimaTemperatura = Math.random() * 100;
+        this.ultimaRegistroSalvo = new Date();
+        this.aquecedorLigado = false;
+        this.temperaturaDesejada = 0;
+        var _this = this;
+        setInterval(function () { _this.atualizaDados(); }, 1000);
+    }
+    ControlPanelProvider.prototype.getRandomArbitrary = function (min, max) {
+        return Math.random() * (max - min) + min;
+    };
+    ControlPanelProvider.prototype.atualizaDados = function () {
+        console.log("update");
+        this.ultimaAtualizacao = new Date();
+        this.ultimaTemperatura = Math.random() * 100;
+        if (this.producaoId != null) {
+            //registra a cada 30 segundos
+            if ((this.ultimaAtualizacao.getTime() - this.ultimaRegistroSalvo.getTime()) > 30000) {
+                this.ultimaRegistroSalvo = this.ultimaAtualizacao;
+                var out = {
+                    Temperatura: this.ultimaTemperatura,
+                    Data: this.ultimaAtualizacao,
+                    AquecedorLigado: this.aquecedorLigado
+                };
+                this.itemsCollection.add(out);
+            }
+        }
+    };
+    ControlPanelProvider.prototype.conectar = function (id) {
+        var _this = this;
+        this.producaoId = id;
+        this.itemsCollection = this.afs.collection('Producoes/' + id + "/RampasExecutada/");
+        this.rampaCollection = this.afs.collection('Producoes/' + id + "/RampasPlanejado/", function (ref) { return ref.orderBy('Sequencia'); });
+        this.rampas = this.rampaCollection.snapshotChanges()
+            .map(function (actions) {
             return actions.map(function (a) {
                 var data = a.payload.doc.data();
                 var id = a.payload.doc.id;
                 return __assign({ id: id }, data);
             });
         });
-    }
-    RampaPage.prototype.ionViewDidLoad = function () {
-        console.log('ionViewDidLoad RampaPage');
+        //Obtem a rampa planejada
+        this.rampas.subscribe(function (i) {
+            _this.rampasArray = i;
+            _this.atualizarStatusRampa();
+        }, function (erro) { console.log(erro); });
+        //Obtem Produção 
+        this.producaoDoc = this.afs.doc('Producoes/' + id);
+        this.producao = this.producaoDoc.valueChanges();
+        this.producao.subscribe(function (i) {
+            _this.producaoObj = i;
+            _this.atualizarStatusRampa();
+        }, function (erro) { console.log(erro); });
     };
-    RampaPage.prototype.showAdd = function () {
+    ControlPanelProvider.prototype.atualizarStatusRampa = function () {
         var _this = this;
-        console.log("Click to add");
-        var prompt = this.alertCtrl.create({
-            title: 'Rampa',
-            message: "Adicione uma nova etapa na rampa:",
-            inputs: [
-                {
-                    name: 'Nome',
-                    placeholder: 'Nome',
-                },
-                {
-                    name: 'Sequencia',
-                    placeholder: 'Sequencia',
-                    type: 'Number',
-                },
-                {
-                    name: 'Temperatura',
-                    placeholder: 'Temperatura em °C',
-                    type: 'Number',
-                },
-                {
-                    name: 'Tempo',
-                    placeholder: 'Tempo em minutos',
-                    type: 'Number',
-                }
-            ],
-            buttons: [
-                {
-                    text: 'Cancel',
-                    handler: function (data) {
-                        console.log('Cancel clicked');
-                    }
-                },
-                {
-                    text: 'Save',
-                    handler: function (data) {
-                        console.log('Saved clicked');
-                        _this.add(data);
-                    }
-                }
-            ]
+        if (this.rampasArray == null) {
+            //Metodo asyn não carregou ainda
+            return;
+        }
+        //Se não iniciar ainda utilizar a data agora
+        if (this.producaoObj == null) {
+            //Metodo asyn não carregou ainda
+            return;
+        }
+        var velocidadeSubida = 1; //graus por minuto;
+        var auxData = this.producaoObj.Inicio;
+        var auxTemperatura = 0;
+        var auxMinutos = 0;
+        this.rampasArray.forEach(function (r) {
+            //Rampa de alteração de temperatura         
+            auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
+            //Trata tempo negativo em caso de descida
+            auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
+            auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+            if (_this.ultimaAtualizacao < auxData) {
+                _this.rampaAtual = r;
+                _this.emSubida = true;
+                return;
+            }
+            //Tempo na temperatura da rampa
+            auxData.setMinutes(auxData.getMinutes() + r.Tempo);
+            auxTemperatura = r.Temperatura;
+            if (_this.ultimaAtualizacao < auxData) {
+                _this.rampaAtual = r;
+                _this.emSubida = false;
+                return;
+            }
         });
-        prompt.present();
     };
-    RampaPage.prototype.add = function (data) {
-        console.log(data);
-        var out = {
-            Nome: data.Nome,
-            Sequencia: Number(data.Sequencia),
-            Temperatura: Number(data.Temperatura),
-            Tempo: Number(data.Tempo),
-        };
-        this.itemsCollection.add(out);
-    };
-    RampaPage.prototype.deleteItem = function (data) {
-        this.itemsCollection.doc(data.id).delete();
-    };
-    RampaPage = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-rampa',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <ion-grid>\n      <ion-row>\n        <ion-col col></ion-col>\n        <ion-col col></ion-col>\n        <ion-col col>\n          <ion-icon name="thermometer"></ion-icon>\n        </ion-col>\n        <ion-col col>\n          <ion-icon name="time"></ion-icon>\n        </ion-col>\n        <ion-col col></ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n  <ion-list ion-item *ngFor="let rampa of rampas | async">\n    <ion-grid>\n      <ion-row>\n        <ion-col col>{{ rampa.Nome }}</ion-col>\n        <ion-col col>{{ rampa.Sequencia }}</ion-col>\n        <ion-col col>{{ rampa.Temperatura }}°C</ion-col>\n        <ion-col col>{{ rampa.Tempo }} min</ion-col>\n        <ion-col col>\n          <button (click)="deleteItem(rampa)">\n            <ion-icon name="trash"></ion-icon>\n          </button>\n        </ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
-        }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]])
-    ], RampaPage);
-    return RampaPage;
+    ControlPanelProvider = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_angularfire2_firestore__["a" /* AngularFirestore */]])
+    ], ControlPanelProvider);
+    return ControlPanelProvider;
 }());
 
-//# sourceMappingURL=rampa.js.map
+//# sourceMappingURL=control-panel.js.map
 
 /***/ }),
 
@@ -204,10 +215,10 @@ var RampaPage = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ReceitasPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__rampa_rampa__ = __webpack_require__(157);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__rampa_rampa__ = __webpack_require__(159);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__produzir_produzir__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_angularfire2_firestore__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_finally__ = __webpack_require__(416);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_angularfire2_firestore__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_finally__ = __webpack_require__(417);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_finally___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_finally__);
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -362,7 +373,126 @@ var ReceitasPage = (function () {
 
 /***/ }),
 
-/***/ 169:
+/***/ 159:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return RampaPage; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__ = __webpack_require__(47);
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+var RampaPage = (function () {
+    function RampaPage(navCtrl, navParams, afs, alertCtrl) {
+        this.navCtrl = navCtrl;
+        this.navParams = navParams;
+        this.afs = afs;
+        this.alertCtrl = alertCtrl;
+        console.log(this.navParams);
+        this.itemsCollection = afs.collection('Receitas/' + this.navParams.data.id + "/Rampas/", function (ref) { return ref.orderBy('Sequencia'); });
+        this.rampas = this.itemsCollection.snapshotChanges().map(function (actions) {
+            return actions.map(function (a) {
+                var data = a.payload.doc.data();
+                var id = a.payload.doc.id;
+                return __assign({ id: id }, data);
+            });
+        });
+    }
+    RampaPage.prototype.ionViewDidLoad = function () {
+        console.log('ionViewDidLoad RampaPage');
+    };
+    RampaPage.prototype.showAdd = function () {
+        var _this = this;
+        console.log("Click to add");
+        var prompt = this.alertCtrl.create({
+            title: 'Rampa',
+            message: "Adicione uma nova etapa na rampa:",
+            inputs: [
+                {
+                    name: 'Nome',
+                    placeholder: 'Nome',
+                },
+                {
+                    name: 'Sequencia',
+                    placeholder: 'Sequencia',
+                    type: 'Number',
+                },
+                {
+                    name: 'Temperatura',
+                    placeholder: 'Temperatura em °C',
+                    type: 'Number',
+                },
+                {
+                    name: 'Tempo',
+                    placeholder: 'Tempo em minutos',
+                    type: 'Number',
+                }
+            ],
+            buttons: [
+                {
+                    text: 'Cancel',
+                    handler: function (data) {
+                        console.log('Cancel clicked');
+                    }
+                },
+                {
+                    text: 'Save',
+                    handler: function (data) {
+                        console.log('Saved clicked');
+                        _this.add(data);
+                    }
+                }
+            ]
+        });
+        prompt.present();
+    };
+    RampaPage.prototype.add = function (data) {
+        console.log(data);
+        var out = {
+            Nome: data.Nome,
+            Sequencia: Number(data.Sequencia),
+            Temperatura: Number(data.Temperatura),
+            Tempo: Number(data.Tempo),
+        };
+        this.itemsCollection.add(out);
+    };
+    RampaPage.prototype.deleteItem = function (data) {
+        this.itemsCollection.doc(data.id).delete();
+    };
+    RampaPage = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
+            selector: 'page-rampa',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <ion-grid>\n      <ion-row>\n        <ion-col col></ion-col>\n        <ion-col col></ion-col>\n        <ion-col col>\n          <ion-icon name="thermometer"></ion-icon>\n        </ion-col>\n        <ion-col col>\n          <ion-icon name="time"></ion-icon>\n        </ion-col>\n        <ion-col col></ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n  <ion-list ion-item *ngFor="let rampa of rampas | async">\n    <ion-grid>\n      <ion-row>\n        <ion-col col>{{ rampa.Nome }}</ion-col>\n        <ion-col col>{{ rampa.Sequencia }}</ion-col>\n        <ion-col col>{{ rampa.Temperatura }}°C</ion-col>\n        <ion-col col>{{ rampa.Tempo }} min</ion-col>\n        <ion-col col>\n          <button (click)="deleteItem(rampa)">\n            <ion-icon name="trash"></ion-icon>\n          </button>\n        </ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]])
+    ], RampaPage);
+    return RampaPage;
+}());
+
+//# sourceMappingURL=rampa.js.map
+
+/***/ }),
+
+/***/ 170:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -375,24 +505,24 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 169;
+webpackEmptyAsyncContext.id = 170;
 
 /***/ }),
 
-/***/ 213:
+/***/ 214:
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
 	"../pages/login/login.module": [
-		439,
+		440,
 		3
 	],
 	"../pages/produzir/produzir.module": [
-		440,
+		441,
 		2
 	],
 	"../pages/rampa/rampa.module": [
-		441,
+		443,
 		1
 	],
 	"../pages/receitas/receitas.module": [
@@ -411,18 +541,18 @@ function webpackAsyncContext(req) {
 webpackAsyncContext.keys = function webpackAsyncContextKeys() {
 	return Object.keys(map);
 };
-webpackAsyncContext.id = 213;
+webpackAsyncContext.id = 214;
 module.exports = webpackAsyncContext;
 
 /***/ }),
 
-/***/ 276:
+/***/ 277:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(277);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(294);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(278);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(295);
 
 
 Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_1__app_module__["a" /* AppModule */]);
@@ -430,7 +560,7 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 
 /***/ }),
 
-/***/ 294:
+/***/ 295:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -438,26 +568,28 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__(436);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__(437);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(118);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_list_list__ = __webpack_require__(437);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_list_list__ = __webpack_require__(438);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_login_login__ = __webpack_require__(86);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_receitas_receitas__ = __webpack_require__(158);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_rampa_rampa__ = __webpack_require__(157);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_rampa_rampa__ = __webpack_require__(159);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_produzir_produzir__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__ = __webpack_require__(274);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__ = __webpack_require__(275);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_angularfire2__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__environments_environment__ = __webpack_require__(438);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__ = __webpack_require__(275);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__ = __webpack_require__(276);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_angularfire2__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__environments_environment__ = __webpack_require__(439);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angularfire2_auth__ = __webpack_require__(81);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_firestore__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__ionic_native_google_plus__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_firestore__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__ionic_native_google_plus__ = __webpack_require__(234);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__providers_control_panel_control_panel__ = __webpack_require__(134);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -495,8 +627,8 @@ var AppModule = (function () {
                     links: [
                         { loadChildren: '../pages/login/login.module#LoginPageModule', name: 'LoginPage', segment: 'login', priority: 'low', defaultHistory: [] },
                         { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] }
+                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] },
+                        { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] }
                     ]
                 }),
                 __WEBPACK_IMPORTED_MODULE_12_angularfire2__["a" /* AngularFireModule */].initializeApp(__WEBPACK_IMPORTED_MODULE_13__environments_environment__["a" /* environment */].firebase),
@@ -517,7 +649,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__["a" /* StatusBar */],
                 __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__["a" /* SplashScreen */],
                 { provide: __WEBPACK_IMPORTED_MODULE_1__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["c" /* IonicErrorHandler */] },
-                __WEBPACK_IMPORTED_MODULE_16__ionic_native_google_plus__["a" /* GooglePlus */]
+                __WEBPACK_IMPORTED_MODULE_16__ionic_native_google_plus__["a" /* GooglePlus */],
+                __WEBPACK_IMPORTED_MODULE_17__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]
             ]
         })
     ], AppModule);
@@ -528,19 +661,20 @@ var AppModule = (function () {
 
 /***/ }),
 
-/***/ 436:
+/***/ 437:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(274);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(275);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(275);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(276);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(118);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_login_login__ = __webpack_require__(86);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_receitas_receitas__ = __webpack_require__(158);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_angularfire2_auth__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__providers_control_panel_control_panel__ = __webpack_require__(134);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -558,12 +692,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var MyApp = (function () {
-    function MyApp(platform, statusBar, splashScreen, afAuth) {
+    function MyApp(platform, statusBar, splashScreen, afAuth, controlPanelProvider) {
         this.platform = platform;
         this.statusBar = statusBar;
         this.splashScreen = splashScreen;
         this.afAuth = afAuth;
+        this.controlPanelProvider = controlPanelProvider;
         this.rootPage = __WEBPACK_IMPORTED_MODULE_4__pages_home_home__["a" /* HomePage */];
         this.initializeApp();
         // used for an example of ngFor and navigation
@@ -603,9 +739,11 @@ var MyApp = (function () {
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* Nav */])
     ], MyApp.prototype, "nav", void 0);
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/,
+            providers: [__WEBPACK_IMPORTED_MODULE_8__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */], __WEBPACK_IMPORTED_MODULE_7_angularfire2_auth__["a" /* AngularFireAuth */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */],
+            __WEBPACK_IMPORTED_MODULE_7_angularfire2_auth__["a" /* AngularFireAuth */], __WEBPACK_IMPORTED_MODULE_8__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]])
     ], MyApp);
     return MyApp;
 }());
@@ -614,7 +752,7 @@ var MyApp = (function () {
 
 /***/ }),
 
-/***/ 437:
+/***/ 438:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -671,7 +809,7 @@ var ListPage = (function () {
 
 /***/ }),
 
-/***/ 438:
+/***/ 439:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -700,9 +838,9 @@ var environment = {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__home_home__ = __webpack_require__(118);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angularfire2_auth__ = __webpack_require__(81);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_firebase_app__ = __webpack_require__(227);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_firebase_app__ = __webpack_require__(228);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_firebase_app___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_firebase_app__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_google_plus__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_google_plus__ = __webpack_require__(234);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -791,9 +929,10 @@ var LoginPage = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProduzirPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_highcharts__ = __webpack_require__(317);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_highcharts__ = __webpack_require__(318);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_highcharts___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_highcharts__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__providers_control_panel_control_panel__ = __webpack_require__(134);
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -815,16 +954,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var ProduzirPage = (function () {
-    function ProduzirPage(navCtrl, navParams, afs) {
+    function ProduzirPage(navCtrl, navParams, afs, controlPanelProvider) {
+        var _this = this;
         this.navCtrl = navCtrl;
         this.navParams = navParams;
         this.afs = afs;
+        this.controlPanelProvider = controlPanelProvider;
         //Variavel para exibir ou esconder botão de iniciar
         this.buttonIniciar = false;
         //Series do grafico
         this.data = [];
         console.log('parans:' + this.navParams.data);
+        this.producaoId = this.navParams.data;
         this.rampaCollection = afs.collection('Producoes/' + this.navParams.data + "/RampasPlanejado/", function (ref) { return ref.orderBy('Sequencia'); });
         this.rampas = this.rampaCollection.snapshotChanges()
             .map(function (actions) {
@@ -834,23 +977,26 @@ var ProduzirPage = (function () {
                 return __assign({ id: id }, data);
             });
         });
+        this.registroPanelCollection = afs.collection('Producoes/' + this.navParams.data + "/RampasExecutada/", function (ref) { return ref.orderBy('Data'); });
+        this.registroPanel = this.registroPanelCollection.stateChanges(['added'])
+            .map(function (actions) {
+            return actions.map(function (a) {
+                var data = a.payload.doc.data();
+                var id = a.payload.doc.id;
+                return __assign({ id: id }, data);
+            });
+        });
         this.producaoDoc = afs.doc('Producoes/' + this.navParams.data);
         this.producao = this.producaoDoc.valueChanges();
-        /*
-        EXECUCAO
-        this.rampaCollection = afs.collection<Rampa>('Producoes/' + this.navParams.data + "/RampasPlanejado/", ref => ref.orderBy('Sequencia'));
-        this.rampas = this.rampaCollection.stateChanges(['added'])
-        .map(actions => {
-          return actions.map(a => {
-            const data = a.payload.doc.data() as Rampa;
-            const id = a.payload.doc.id;
-            return { id, ...data };
-          });
-        });*/
+        this.producao.subscribe(function (i) {
+            _this.producaoObj = i;
+            _this.updateChart();
+        }, function (erro) { console.log(erro); });
     }
     ProduzirPage.prototype.ionViewDidLoad = function () {
         var _this = this;
         console.log('ionViewDidLoad ProduzirPage');
+        //Configuração do grafico
         this.chart = __WEBPACK_IMPORTED_MODULE_2_highcharts__["chart"]('container', {
             chart: {
                 type: 'line',
@@ -881,54 +1027,69 @@ var ProduzirPage = (function () {
         });
         //Obtem a rampa planejada
         this.rampas.subscribe(function (i) {
-            var inicio = new Date();
-            var velocidadeSubida = 1; //graus por minuto;
-            var auxData = inicio;
-            var auxTemperatura = 0;
-            var auxMinutos = 0;
-            var data = [];
-            _this.TempoTotal = 0;
-            //Adicionando ponto 0
-            data.push([inicio.valueOf(), 0]);
-            i.forEach(function (r) {
-                //Rampa de alteração de temperatura         
-                auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
-                //Trata tempo negativo em caso de descida
-                auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
-                _this.TempoTotal = _this.TempoTotal + auxMinutos;
-                auxData.setMinutes(auxData.getMinutes() + auxMinutos);
-                data.push([auxData.valueOf(), r.Temperatura]);
-                //Tempo na temperatura da rampa
-                auxData.setMinutes(auxData.getMinutes() + r.Tempo);
-                data.push([auxData.valueOf(), r.Temperatura]);
-                _this.TempoTotal = _this.TempoTotal + r.Tempo;
-                auxTemperatura = r.Temperatura;
-            });
-            _this.HoraFinal = inicio;
-            _this.HoraFinal.setMinutes(inicio.getMinutes() + _this.TempoTotal);
-            _this.chart.series[0].setData(data);
+            _this.rampasArray = i;
+            _this.updateChart();
         }, function (erro) { console.log(erro); });
-        /*
-        EXECUTADO
-        this.rampas.subscribe(
-          i => {
-            i.forEach(r => {
-              this.chart.series[0].addPoint(r.Temperatura);
-              console.log(r);
+        //Obtem rampa executada
+        this.registroPanel.subscribe(function (i) {
+            i.forEach(function (r) {
+                _this.chart.series[1].addPoint([r.Data.valueOf(), r.Temperatura]);
             });
-          },
-          erro => { console.log(erro) }
-        );*/
+        }, function (erro) { console.log(erro); });
     };
     //Iniciar processo de brassagem
     ProduzirPage.prototype.iniciar = function () {
         this.producaoDoc.update({ Status: "Em Brassagem", Inicio: new Date() });
+        this.conectarPainelControle();
+    };
+    //Atualiza Grafico
+    ProduzirPage.prototype.updateChart = function () {
+        var _this = this;
+        if (this.rampasArray == null) {
+            //Metodo asyn não carregou ainda
+            return;
+        }
+        //Se não iniciar ainda utilizar a data agora
+        if (this.producaoObj.Inicio != null) {
+            var inicio = this.producaoObj.Inicio;
+        }
+        else {
+            var inicio = new Date();
+        }
+        var velocidadeSubida = 1; //graus por minuto;
+        var auxData = inicio;
+        var auxTemperatura = 0;
+        var auxMinutos = 0;
+        var data = [];
+        this.TempoTotal = 0;
+        //Adicionando ponto 0
+        data.push([inicio.valueOf(), 0]);
+        this.rampasArray.forEach(function (r) {
+            //Rampa de alteração de temperatura         
+            auxMinutos = (r.Temperatura - auxTemperatura) * velocidadeSubida;
+            //Trata tempo negativo em caso de descida
+            auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
+            _this.TempoTotal = _this.TempoTotal + auxMinutos;
+            auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+            data.push([auxData.valueOf(), r.Temperatura]);
+            //Tempo na temperatura da rampa
+            auxData.setMinutes(auxData.getMinutes() + r.Tempo);
+            data.push([auxData.valueOf(), r.Temperatura]);
+            _this.TempoTotal = _this.TempoTotal + r.Tempo;
+            auxTemperatura = r.Temperatura;
+        });
+        this.HoraFinal = inicio;
+        this.HoraFinal.setMinutes(inicio.getMinutes() + this.TempoTotal);
+        this.chart.series[0].setData(data);
+    };
+    ProduzirPage.prototype.conectarPainelControle = function () {
+        this.controlPanelProvider.conectar(this.navParams.data);
     };
     ProduzirPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-6>\n          <ion-card>\n\n              <ion-card-header>\n                {{ (producao | async)?.Status }}\n              </ion-card-header>\n              <ion-card-content>\n                  <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>                  \n              </ion-card-content>\n    \n            </ion-card>\n        \n      </ion-col>    \n      <ion-col col-6>\n        <ion-card>\n\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n             Final da etapa quente as  {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
+            selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            {{ (producao | async)?.Status }}\n          </ion-card-header>\n          <ion-card-content>\n            <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>\n          </ion-card-content>\n\n        </ion-card>\n\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n            Final da etapa quente as {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Panel de controle\n          </ion-card-header>\n          <ion-card-content>\n            <p *ngIf="(controlPanelProvider.producaoId!=producaoId)">O sistema não esta salvando os dados do Painel nessa produção</p>\n            <button *ngIf="(controlPanelProvider.producaoId!=producaoId)" ion-button (click)="conectarPainelControle()">Reconectar a essa produção</button>\n            <p>Ultima atulização: {{ controlPanelProvider.ultimaAtualizacao | date:\'HH:mm:ss\'}}</p>\n            <p>Ultima temperatura: {{ controlPanelProvider.ultimaTemperatura | number}} °C</p>\n            <p>Arquecedor:\n              <ion-icon name="flame" *ngIf="(controlPanelProvider.aquecedorLigado)"> Ligado</ion-icon>\n              <ion-icon name="snow" *ngIf="(!controlPanelProvider.aquecedorLigado)"> Desligado</ion-icon>\n            </p>\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_4__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]])
     ], ProduzirPage);
     return ProduzirPage;
 }());
@@ -937,5 +1098,5 @@ var ProduzirPage = (function () {
 
 /***/ })
 
-},[276]);
+},[277]);
 //# sourceMappingURL=main.js.map

@@ -11,8 +11,11 @@ import { ReceitasPage } from '../pages/receitas/receitas';
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 
+import { ControlPanelProvider } from '../providers/control-panel/control-panel';
+
 @Component({
-  templateUrl: 'app.html'
+  templateUrl: 'app.html',
+  providers: [ControlPanelProvider]
 })
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
@@ -21,13 +24,14 @@ export class MyApp {
 
   pages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public afAuth: AngularFireAuth) {
-    this.initializeApp();
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
+    public afAuth: AngularFireAuth, public controlPanelProvider: ControlPanelProvider) {
 
+    this.initializeApp();
     // used for an example of ngFor and navigation
     this.pages = [
       { title: 'Home', component: HomePage },
-      { title: 'Receitas', component: ReceitasPage },            
+      { title: 'Receitas', component: ReceitasPage },
       { title: 'Logout', component: LoginPage }
     ];
 
@@ -49,15 +53,15 @@ export class MyApp {
       case ((page.title == 'Logout')): {
         console.log('Clicked Logout button');
         this.afAuth.auth.signOut();
-        this.nav.setRoot(page.component);          
+        this.nav.setRoot(page.component);
       }
         break;
 
       default: {
-        this.nav.push(page.component);         
+        this.nav.push(page.component);
       }
         break;
     }
-    
+
   }
 }
