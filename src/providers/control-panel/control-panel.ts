@@ -77,9 +77,8 @@ export class ControlPanelProvider {
   atualizaDados() {
     console.log("update")
     this.ultimaAtualizacao = new Date();
-    this.ultimaTemperatura = this.getRandomArbitrary();
-    if (this.producaoId != null) {
-
+    this.ultimaTemperatura = this.getRandomArbitrary();    
+    if (this.producaoId != null) {      
       //Verifica final da rampa atual
       if (this.rampaEmSubida) {
         //Para rampa em subida o final é determinado pela temperatura

@@ -141,6 +141,7 @@ var ControlPanelProvider = (function () {
         this.ultimaAtualizacao = new Date();
         this.ultimaTemperatura = this.getRandomArbitrary();
         if (this.producaoId != null) {
+            console.log(this.rampaAtual);
             //Verifica final da rampa atual
             if (this.rampaEmSubida) {
                 //Para rampa em subida o final é determinado pela temperatura
@@ -259,10 +260,9 @@ var ControlPanelProvider = (function () {
     };
     ControlPanelProvider = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_angularfire2_firestore__["a" /* AngularFirestore */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_angularfire2_firestore__["a" /* AngularFirestore */]) === "function" && _a || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_angularfire2_firestore__["a" /* AngularFirestore */]])
     ], ControlPanelProvider);
     return ControlPanelProvider;
-    var _a;
 }());
 
 //# sourceMappingURL=control-panel.js.map
@@ -543,10 +543,11 @@ var ReceitasPage = (function () {
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
             selector: 'page-receitas',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/'<!--\n  Generated template for the ReceitasPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Receitas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n\n  <ion-list>\n    <ion-item *ngFor="let receita of receitas | async">\n      <p>{{ receita.Nome }}\n        <button tappable (click)="editReceita(receita)">\n          <ion-icon name="create"></ion-icon>\n        </button>\n        <button tappable (click)="produzirReceita(receita)">\n          <ion-icon name="beer"></ion-icon>\n        </button>\n      </p>\n    </ion-item>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/,
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4_angularfire2_firestore__["a" /* AngularFirestore */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4_angularfire2_firestore__["a" /* AngularFirestore */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]) === "function" && _e || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */],
+            __WEBPACK_IMPORTED_MODULE_4_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]])
     ], ReceitasPage);
     return ReceitasPage;
-    var _a, _b, _c, _d, _e;
 }());
 
 //# sourceMappingURL=receitas.js.map
@@ -579,15 +580,15 @@ var map = {
 		3
 	],
 	"../pages/produzir/produzir.module": [
-		441,
+		443,
 		2
 	],
 	"../pages/rampa/rampa.module": [
-		442,
+		441,
 		1
 	],
 	"../pages/receitas/receitas.module": [
-		443,
+		442,
 		0
 	]
 };
@@ -687,9 +688,9 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["d" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* MyApp */], {}, {
                     links: [
                         { loadChildren: '../pages/login/login.module#LoginPageModule', name: 'LoginPage', segment: 'login', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] },
                         { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] }
+                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] },
+                        { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] }
                     ]
                 }),
                 __WEBPACK_IMPORTED_MODULE_12_angularfire2__["a" /* AngularFireModule */].initializeApp(__WEBPACK_IMPORTED_MODULE_13__environments_environment__["a" /* environment */].firebase),
@@ -1166,10 +1167,12 @@ var ProduzirPage = (function () {
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
             selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            {{ (producao | async)?.Status }}\n          </ion-card-header>\n          <ion-card-content>\n            <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>\n          </ion-card-content>\n\n        </ion-card>\n\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n            Final da etapa quente as {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Panel de controle\n          </ion-card-header>\n          <ion-card-content>\n            <p *ngIf="(controlPanelProvider.producaoId!=producaoId)">O sistema não esta salvando os dados do Painel nessa produção</p>\n            <button *ngIf="(controlPanelProvider.producaoId!=producaoId)" ion-button (click)="conectarPainelControle()">Reconectar a essa produção</button>\n            <p>Ultima atulização: {{ controlPanelProvider.ultimaAtualizacao | date:\'HH:mm:ss\'}}</p>\n            <p>Ultima temperatura: {{ controlPanelProvider.ultimaTemperatura | number}} °C</p>\n            <p>Arquecedor:\n              <ion-icon name="flame" *ngIf="(controlPanelProvider.aquecedorLigado)"> Ligado</ion-icon>\n              <ion-icon name="snow" *ngIf="(!controlPanelProvider.aquecedorLigado)"> Desligado</ion-icon>\n            </p>\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__providers_control_panel_control_panel__["a" /* ControlPanelProvider */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]) === "function" && _d || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
+            __WEBPACK_IMPORTED_MODULE_3_angularfire2_firestore__["a" /* AngularFirestore */],
+            __WEBPACK_IMPORTED_MODULE_4__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]])
     ], ProduzirPage);
     return ProduzirPage;
-    var _a, _b, _c, _d;
 }());
 
 //# sourceMappingURL=produzir.js.map
