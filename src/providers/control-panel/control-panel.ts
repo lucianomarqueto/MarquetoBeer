@@ -21,7 +21,6 @@ export class ControlPanelProvider {
 
   public ultimaRegistroSalvo: Date;
 
-  public temperaturaDesejada: number;
 
   public rampaAtual: RampaId;
   public rampaEmSubida: boolean;
@@ -46,8 +45,6 @@ export class ControlPanelProvider {
     this.ultimaTemperatura = 20;
     this.ultimaRegistroSalvo = new Date();
     this.aquecedorLigado = false;
-    this.temperaturaDesejada = 0;
-
 
     var _this = this;
     setInterval(function () { _this.atualizaDados(); }, 1000);
@@ -74,8 +71,7 @@ export class ControlPanelProvider {
     }
   }
 
-  atualizaDados() {
-    console.log("update")
+  atualizaDados() {    
     this.ultimaAtualizacao = new Date();
     this.ultimaTemperatura = this.getRandomArbitrary();    
     if (this.producaoId != null) {      
@@ -159,8 +155,7 @@ export class ControlPanelProvider {
     );
   }
 
-  atualizarStatusRampa() {
-
+  atualizarStatusRampa() {    
     if (this.rampasArray == null) {
       //Metodo asyn não carregou ainda
       return false;
@@ -176,29 +171,34 @@ export class ControlPanelProvider {
     var auxData = new Date(this.producaoObj.Inicio);
     var auxTemperatura = 0;
     var auxMinutos = 0;
-    for (var i = 0; i < this.rampasArray.length; i++) {
+    for (var i = 0; i < this.rampasArray.length; i++) {      
 
       //Caso não tenha iniciado calcula a subida
       if (this.rampasArray[i].Inicio == null) {
+        
         //Rampa de alteração de temperatura         
         auxMinutos = (this.rampasArray[i].Temperatura - auxTemperatura) * velocidadeSubida;
         //Trata tempo negativo em caso de descida
         auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
-        auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+        auxData.setMinutes(auxData.getMinutes() + auxMinutos);   
+        
         if (this.ultimaAtualizacao < auxData) {
           this.rampaAtual = this.rampasArray[i];
           this.rampaEmSubida = true;
           this.rampaDataFinal = new Date(auxData);
+          
           return true;
         }
       } else {
-        auxData = this.rampasArray[i].Inicio;
+        
+        auxData = new Date(this.rampasArray[i].Inicio);
       }
 
       //Tempo na temperatura da rampa
       auxData.setMinutes(auxData.getMinutes() + this.rampasArray[i].Tempo);
       auxTemperatura = this.rampasArray[i].Temperatura;
-      if (this.ultimaAtualizacao < auxData) {
+      
+      if (this.ultimaAtualizacao < auxData) {        
         this.rampaAtual = this.rampasArray[i];
         this.rampaEmSubida = false;
         this.rampaDataFinal = new Date(auxData);

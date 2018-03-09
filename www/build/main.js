@@ -67,7 +67,7 @@ var HomePage = (function () {
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\home\home.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title>Marqueto Beer</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h3>Olá {{ username }}</h3>\n\n  <ion-list ion-item *ngFor="let producao of producoes | async">\n    <ion-card tappable (click)="selectItem(producao)">\n      <ion-card-header>\n        {{ producao.Receita }}\n      </ion-card-header>\n      <ion-card-content>\n        {{ producao.Status }}\n      </ion-card-content>\n    </ion-card>\n  </ion-list>\n  \n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\home\home.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title>Marqueto Beer</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h3>Olá {{ username }}</h3>\n\n  <ion-list ion-item *ngFor="let producao of producoes | async">\n    <ion-card tappable (click)="selectItem(producao)">\n      <ion-card-header>\n        {{ producao.Receita }}\n      </ion-card-header>\n      <ion-card-content>\n        {{ producao.Status }}\n      </ion-card-content>\n    </ion-card>\n  </ion-list>\n  \n</ion-content>'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\home\home.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_4_angularfire2_auth__["a" /* AngularFireAuth */], __WEBPACK_IMPORTED_MODULE_5_angularfire2_firestore__["a" /* AngularFirestore */]])
     ], HomePage);
@@ -112,7 +112,6 @@ var ControlPanelProvider = (function () {
         this.ultimaTemperatura = 20;
         this.ultimaRegistroSalvo = new Date();
         this.aquecedorLigado = false;
-        this.temperaturaDesejada = 0;
         var _this = this;
         setInterval(function () { _this.atualizaDados(); }, 1000);
     }
@@ -141,7 +140,6 @@ var ControlPanelProvider = (function () {
         this.ultimaAtualizacao = new Date();
         this.ultimaTemperatura = this.getRandomArbitrary();
         if (this.producaoId != null) {
-            console.log(this.rampaAtual);
             //Verifica final da rampa atual
             if (this.rampaEmSubida) {
                 //Para rampa em subida o final é determinado pela temperatura
@@ -212,6 +210,7 @@ var ControlPanelProvider = (function () {
         }, function (erro) { console.log(erro); });
     };
     ControlPanelProvider.prototype.atualizarStatusRampa = function () {
+        console.log("Atualizando status da rampa");
         if (this.rampasArray == null) {
             //Metodo asyn não carregou ainda
             return false;
@@ -226,27 +225,39 @@ var ControlPanelProvider = (function () {
         var auxTemperatura = 0;
         var auxMinutos = 0;
         for (var i = 0; i < this.rampasArray.length; i++) {
+            console.log("Data Inicio");
+            console.log(auxData);
+            console.log(this.ultimaAtualizacao);
+            console.log(auxData);
+            console.log("Rampa " + i);
+            console.log(this.rampasArray[i]);
             //Caso não tenha iniciado calcula a subida
             if (this.rampasArray[i].Inicio == null) {
+                console.log("Inicio null");
                 //Rampa de alteração de temperatura         
                 auxMinutos = (this.rampasArray[i].Temperatura - auxTemperatura) * velocidadeSubida;
                 //Trata tempo negativo em caso de descida
                 auxMinutos = auxMinutos < 0 ? auxMinutos * -1 : auxMinutos;
                 auxData.setMinutes(auxData.getMinutes() + auxMinutos);
+                console.log("Data de final da subida" + auxData);
                 if (this.ultimaAtualizacao < auxData) {
                     this.rampaAtual = this.rampasArray[i];
                     this.rampaEmSubida = true;
                     this.rampaDataFinal = new Date(auxData);
+                    console.log("Defido que é essa rampa em subida");
                     return true;
                 }
             }
             else {
-                auxData = this.rampasArray[i].Inicio;
+                console.log("Inicio != null");
+                auxData = new Date(this.rampasArray[i].Inicio);
             }
             //Tempo na temperatura da rampa
             auxData.setMinutes(auxData.getMinutes() + this.rampasArray[i].Tempo);
             auxTemperatura = this.rampasArray[i].Temperatura;
+            console.log("Data de final da rampa" + auxData);
             if (this.ultimaAtualizacao < auxData) {
+                console.log("Definido que é essa rampa em andamento");
                 this.rampaAtual = this.rampasArray[i];
                 this.rampaEmSubida = false;
                 this.rampaDataFinal = new Date(auxData);
@@ -255,6 +266,7 @@ var ControlPanelProvider = (function () {
         }
     };
     ControlPanelProvider.prototype.atualizaInicioRealRampa = function () {
+        console.log('Atualiza data de inicio');
         this.rampaAtualDocRef = this.afs.doc('Producoes/' + this.producaoId + "/RampasPlanejado/" + this.rampaAtual.id);
         this.rampaAtualDocRef.update({ Inicio: new Date() });
     };
@@ -378,7 +390,7 @@ var RampaPage = (function () {
     };
     RampaPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-rampa',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <ion-grid>\n      <ion-row>\n        <ion-col col></ion-col>\n        <ion-col col></ion-col>\n        <ion-col col>\n          <ion-icon name="thermometer"></ion-icon>\n        </ion-col>\n        <ion-col col>\n          <ion-icon name="time"></ion-icon>\n        </ion-col>\n        <ion-col col></ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n  <ion-list ion-item *ngFor="let rampa of rampas | async">\n    <ion-grid>\n      <ion-row>\n        <ion-col col>{{ rampa.Nome }}</ion-col>\n        <ion-col col>{{ rampa.Sequencia }}</ion-col>\n        <ion-col col>{{ rampa.Temperatura }}°C</ion-col>\n        <ion-col col>{{ rampa.Tempo }} min</ion-col>\n        <ion-col col>\n          <button (click)="deleteItem(rampa)">\n            <ion-icon name="trash"></ion-icon>\n          </button>\n        </ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
+            selector: 'page-rampa',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/'<!--\n  Generated template for the RampaPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Configuração das Rampas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n<ion-content padding>\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n  <ion-list>\n    <ion-grid>\n      <ion-row>\n        <ion-col col></ion-col>\n        <ion-col col></ion-col>\n        <ion-col col>\n          <ion-icon name="thermometer"></ion-icon>\n        </ion-col>\n        <ion-col col>\n          <ion-icon name="time"></ion-icon>\n        </ion-col>\n        <ion-col col></ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n  <ion-list ion-item *ngFor="let rampa of rampas | async">\n    <ion-grid>\n      <ion-row>\n        <ion-col col>{{ rampa.Nome }}</ion-col>\n        <ion-col col>{{ rampa.Sequencia }}</ion-col>\n        <ion-col col>{{ rampa.Temperatura }}°C</ion-col>\n        <ion-col col>{{ rampa.Tempo }} min</ion-col>\n        <ion-col col>\n          <button (click)="deleteItem(rampa)">\n            <ion-icon name="trash"></ion-icon>\n          </button>\n        </ion-col>\n      </ion-row>\n    </ion-grid>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\rampa\rampa.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_2_angularfire2_firestore__["a" /* AngularFirestore */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]])
     ], RampaPage);
@@ -541,7 +553,7 @@ var ReceitasPage = (function () {
     };
     ReceitasPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-receitas',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/'<!--\n  Generated template for the ReceitasPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Receitas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n\n  <ion-list>\n    <ion-item *ngFor="let receita of receitas | async">\n      <p>{{ receita.Nome }}\n        <button tappable (click)="editReceita(receita)">\n          <ion-icon name="create"></ion-icon>\n        </button>\n        <button tappable (click)="produzirReceita(receita)">\n          <ion-icon name="beer"></ion-icon>\n        </button>\n      </p>\n    </ion-item>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/,
+            selector: 'page-receitas',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/'<!--\n  Generated template for the ReceitasPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Receitas</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n\n  <ion-fab top right edge>\n    <button ion-fab mini tappable (click)="showAdd()">\n      <ion-icon name="add"></ion-icon>\n    </button>\n  </ion-fab>\n\n  <ion-list>\n    <ion-item *ngFor="let receita of receitas | async">\n      <p>{{ receita.Nome }}\n        <button tappable (click)="editReceita(receita)">\n          <ion-icon name="create"></ion-icon>\n        </button>\n        <button tappable (click)="produzirReceita(receita)">\n          <ion-icon name="beer"></ion-icon>\n        </button>\n      </p>\n    </ion-item>\n  </ion-list>\n</ion-content>'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\receitas\receitas.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* LoadingController */],
@@ -580,15 +592,15 @@ var map = {
 		3
 	],
 	"../pages/produzir/produzir.module": [
-		443,
+		441,
 		2
 	],
 	"../pages/rampa/rampa.module": [
-		441,
+		442,
 		1
 	],
 	"../pages/receitas/receitas.module": [
-		442,
+		443,
 		0
 	]
 };
@@ -688,9 +700,9 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["d" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* MyApp */], {}, {
                     links: [
                         { loadChildren: '../pages/login/login.module#LoginPageModule', name: 'LoginPage', segment: 'login', priority: 'low', defaultHistory: [] },
+                        { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] },
                         { loadChildren: '../pages/rampa/rampa.module#RampaPageModule', name: 'RampaPage', segment: 'rampa', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] },
-                        { loadChildren: '../pages/produzir/produzir.module#ProduzirPageModule', name: 'ProduzirPage', segment: 'produzir', priority: 'low', defaultHistory: [] }
+                        { loadChildren: '../pages/receitas/receitas.module#ReceitasPageModule', name: 'ReceitasPage', segment: 'receitas', priority: 'low', defaultHistory: [] }
                     ]
                 }),
                 __WEBPACK_IMPORTED_MODULE_12_angularfire2__["a" /* AngularFireModule */].initializeApp(__WEBPACK_IMPORTED_MODULE_13__environments_environment__["a" /* environment */].firebase),
@@ -801,7 +813,7 @@ var MyApp = (function () {
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* Nav */])
     ], MyApp.prototype, "nav", void 0);
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/,
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/'<ion-menu [content]="content">\n  <ion-header>\n    <ion-toolbar>\n      <ion-title>Menu</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-content>\n    <ion-list>\n      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">\n        {{p.title}}\n      </button>\n    </ion-list>\n  </ion-content>\n\n</ion-menu>\n\n<!-- Disable swipe-to-go-back because it\'s poor UX to combine STGB with side menus -->\n<ion-nav [root]="rootPage" #content swipeBackEnabled="false"></ion-nav>'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\app\app.html"*/,
             providers: [__WEBPACK_IMPORTED_MODULE_8__providers_control_panel_control_panel__["a" /* ControlPanelProvider */]]
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */],
@@ -859,7 +871,7 @@ var ListPage = (function () {
     };
     ListPage = ListPage_1 = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-list',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\list\list.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title>List</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <button ion-item *ngFor="let item of items" (click)="itemTapped($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>\n      {{item.title}}\n      <div class="item-note" item-end>\n        {{item.note}}\n      </div>\n    </button>\n  </ion-list>\n  <div *ngIf="selectedItem" padding>\n    You navigated here from <b>{{selectedItem.title}}</b>\n  </div>\n</ion-content>\n'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\list\list.html"*/
+            selector: 'page-list',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\list\list.html"*/'<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title>List</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <button ion-item *ngFor="let item of items" (click)="itemTapped($event, item)">\n      <ion-icon [name]="item.icon" item-start></ion-icon>\n      {{item.title}}\n      <div class="item-note" item-end>\n        {{item.note}}\n      </div>\n    </button>\n  </ion-list>\n  <div *ngIf="selectedItem" padding>\n    You navigated here from <b>{{selectedItem.title}}</b>\n  </div>\n</ion-content>\n'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\list\list.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */]])
     ], ListPage);
@@ -972,7 +984,7 @@ var LoginPage = (function () {
     };
     LoginPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-login',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\login\login.html"*/'<!--\n  Generated template for the LoginPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Login</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>  \n  <div *ngIf="afAuth.authState | async; let user; else showLogin">\n    <h1>Olá {{ user.displayName }}!</h1>\n    <button (click)="logout()">Logout</button>\n  </div>\n  <ng-template #showLogin>\n    <p>Clique para login com o Google.</p>\n    <button (click)="login()"><ion-icon name="logo-google"></ion-icon></button>\n  </ng-template>\n</ion-content>\n'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\login\login.html"*/,
+            selector: 'page-login',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\login\login.html"*/'<!--\n  Generated template for the LoginPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Login</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>  \n  <div *ngIf="afAuth.authState | async; let user; else showLogin">\n    <h1>Olá {{ user.displayName }}!</h1>\n    <button (click)="logout()">Logout</button>\n  </div>\n  <ng-template #showLogin>\n    <p>Clique para login com o Google.</p>\n    <button (click)="login()"><ion-icon name="logo-google"></ion-icon></button>\n  </ng-template>\n</ion-content>\n'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\login\login.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */], __WEBPACK_IMPORTED_MODULE_3_angularfire2_auth__["a" /* AngularFireAuth */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* Platform */], __WEBPACK_IMPORTED_MODULE_5__ionic_native_google_plus__["a" /* GooglePlus */]])
@@ -1165,7 +1177,7 @@ var ProduzirPage = (function () {
     };
     ProduzirPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-produzir',template:/*ion-inline-start:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            {{ (producao | async)?.Status }}\n          </ion-card-header>\n          <ion-card-content>\n            <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>\n          </ion-card-content>\n\n        </ion-card>\n\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n            Final da etapa quente as {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Panel de controle\n          </ion-card-header>\n          <ion-card-content>\n            <p *ngIf="(controlPanelProvider.producaoId!=producaoId)">O sistema não esta salvando os dados do Painel nessa produção</p>\n            <button *ngIf="(controlPanelProvider.producaoId!=producaoId)" ion-button (click)="conectarPainelControle()">Reconectar a essa produção</button>\n            <p>Ultima atulização: {{ controlPanelProvider.ultimaAtualizacao | date:\'HH:mm:ss\'}}</p>\n            <p>Ultima temperatura: {{ controlPanelProvider.ultimaTemperatura | number}} °C</p>\n            <p>Arquecedor:\n              <ion-icon name="flame" *ngIf="(controlPanelProvider.aquecedorLigado)"> Ligado</ion-icon>\n              <ion-icon name="snow" *ngIf="(!controlPanelProvider.aquecedorLigado)"> Desligado</ion-icon>\n            </p>\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"c:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
+            selector: 'page-produzir',template:/*ion-inline-start:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/'<!--\n  Generated template for the ProduzirPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n\n  <ion-navbar>\n    <ion-title>Produção {{ (producao | async)?.Receita }}</ion-title>\n  </ion-navbar>\n\n</ion-header>\n\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n\n          <ion-card-header>\n            {{ (producao | async)?.Status }}\n          </ion-card-header>\n          <ion-card-content>\n            <button *ngIf="(producao | async)?.Status == \'Em Preparação\'" ion-button (click)="iniciar()">Iniciar</button>\n          </ion-card-content>\n\n        </ion-card>\n\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Estimativa: {{ TempoTotal }} Minutos\n          </ion-card-header>\n          <ion-card-content>\n            Final da etapa quente as {{ HoraFinal | date:\'dd/MM/yyyy HH:mm\'}}\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n      <ion-col col-12>\n        <ion-card>\n          <ion-card-header>\n            Panel de controle\n          </ion-card-header>\n          <ion-card-content>\n            <p *ngIf="(controlPanelProvider.producaoId!=producaoId)">O sistema não esta salvando os dados do Painel nessa produção</p>\n            <button *ngIf="(controlPanelProvider.producaoId!=producaoId)" ion-button (click)="conectarPainelControle()">Reconectar a essa produção</button>\n            <p>Ultima atulização: {{ controlPanelProvider.ultimaAtualizacao | date:\'HH:mm:ss\'}}</p>\n            <p>Ultima temperatura: {{ controlPanelProvider.ultimaTemperatura | number}} °C</p>\n            <p>Arquecedor:\n              <ion-icon name="flame" *ngIf="(controlPanelProvider.aquecedorLigado)"> Ligado</ion-icon>\n              <ion-icon name="snow" *ngIf="(!controlPanelProvider.aquecedorLigado)"> Desligado</ion-icon>\n            </p>\n\n\n          </ion-card-content>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <div id="container" style="display: block;"></div>\n</ion-content>'/*ion-inline-end:"C:\Node\MarquetoBeer\MarquetoBeer\src\pages\produzir\produzir.html"*/,
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavController */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["i" /* NavParams */],
